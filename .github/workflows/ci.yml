@@ -17,17 +17,18 @@ jobs:
           echo ${{github.event.repository.owner}}
           ls -la
           pwd
-      - name: Buid
+      - name: Build
         run: |
           export NODE_OPTIONS=--max-old-space-size=10230
           export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
           echo $PATH
           yarn
           yarn build
-      - name: Deploy by Rsync
+          ls -la
+      - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: ./dist/.
+          FOLDER: dist/
 
