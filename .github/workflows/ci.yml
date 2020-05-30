@@ -1,28 +1,33 @@
 name: Node CI
 
-on: [push]
+on:
+  watch:
+    types: started
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node_version: [10.x, 12.x]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+
     steps:
       - uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node_version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node_version }}
       - run: echo ${{github.ref}}
-      - run: yarn
-      - run: yarn run lint
-      - run: yarn run tsc
-      - run: yarn run build
-      - run: yarn run test:all
-        env:
-          CI: true
-          PROGRESS: none
-          NODE_ENV: test
-          NODE_OPTIONS: --max_old_space_size=4096
+      - name: print env information
+        run: |
+          echo ${{github.event.repository.owner}}
+          ls -la
+          pwd
+      - name: Buid
+        run: |
+          export NODE_OPTIONS=--max-old-space-size=10230
+          export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+          echo $PATH
+          yarn
+          yarn build
+      - name: Deploy by Rsync
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: ./dist/.
+
